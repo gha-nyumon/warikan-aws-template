@@ -1,11 +1,18 @@
 data "aws_caller_identity" "current" {}
 
 # 最初の中身（warikan/ のコード）。2回目からは GitHub Actions がコードを届ける
+# zip の中は warikan/calc.py のように warikan/ フォルダごと入れる（ハンドラーが warikan.handler.handler のため）
 data "archive_file" "initial" {
   type        = "zip"
-  source_dir  = "${path.module}/../warikan"
   output_path = "${path.module}/.build/initial.zip"
-  excludes    = ["__pycache__"]
+
+  dynamic "source" {
+    for_each = fileset("${path.module}/../warikan", "*.py")
+    content {
+      content  = file("${path.module}/../warikan/${source.value}")
+      filename = "warikan/${source.value}"
+    }
+  }
 }
 
 # ---------------------------------------------------------------------------

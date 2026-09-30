@@ -20,7 +20,13 @@ def main() -> None:
     files = sorted(PACKAGE.glob("*.py"))
     with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
         for f in files:
-            z.write(f, f.relative_to(ROOT).as_posix())
+            # 日時を固定して、同じコードなら毎回まったく同じ zip になるようにする
+            # （Lambda は中身が同じなら新しいバージョンを作らない。
+            #   dev と prod が同じバージョンになる）
+            info = zipfile.ZipInfo(f.relative_to(ROOT).as_posix(), date_time=(2026, 1, 1, 0, 0, 0))
+            info.external_attr = 0o644 << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            z.writestr(info, f.read_bytes())
     names = ", ".join(f.relative_to(ROOT).as_posix() for f in files)
     print(f"{OUT.relative_to(ROOT)} を作りました（{names}）")
 

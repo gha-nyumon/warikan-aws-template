@@ -21,8 +21,7 @@ def main() -> None:
     with zipfile.ZipFile(OUT, "w", zipfile.ZIP_DEFLATED) as z:
         for f in files:
             # 日時を固定して、同じコードなら毎回まったく同じ zip になるようにする
-            # （Lambda は中身が同じなら新しいバージョンを作らない。
-            #   dev と prod が同じバージョンになる）
+            # （どのコミットでも、コードが同じかどうかを zip の中身で比べられる）
             info = zipfile.ZipInfo(f.relative_to(ROOT).as_posix(), date_time=(2026, 1, 1, 0, 0, 0))
             info.external_attr = 0o644 << 16
             info.compress_type = zipfile.ZIP_DEFLATED

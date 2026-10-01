@@ -96,6 +96,9 @@ resource "aws_lambda_permission" "url" {
   qualifier              = each.value.name
   principal              = "*"
   function_url_auth_type = "NONE"
+
+  # 関数URL と許可を同時に作ると「concurrent update operation」（409）で失敗することがあるので、関数URL の後に作る
+  depends_on = [aws_lambda_function_url.env]
 }
 
 # 2025年10月から、新しく作る関数URL には lambda:InvokeFunction の許可も必要（関数URL 経由の呼び出しに限る）
@@ -107,4 +110,6 @@ resource "aws_lambda_permission" "url_invoke" {
   qualifier                = each.value.name
   principal                = "*"
   invoked_via_function_url = true
+
+  depends_on = [aws_lambda_permission.url]
 }
